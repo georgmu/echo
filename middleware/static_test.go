@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -122,6 +123,30 @@ func TestStatic(t *testing.T) {
 			whenURL:        "/",
 			expectCode:     http.StatusOK,
 			expectContains: "<title>Echo</title>",
+		},
+		{
+			name:           "ok, serve file with whitespace on disk",
+			whenURL:        "/special/" + url.PathEscape("file with spaces.txt"),
+			expectCode:     http.StatusOK,
+			expectContains: "file with spaces in filename",
+		},
+		{
+			name:           "nok, when filename with spaces on disk is decoded twice",
+			whenURL:        "/special/" + url.PathEscape("file%20with%20spaces.txt"),
+			expectCode:     http.StatusNotFound,
+			expectContains: "{\"message\":\"Not Found\"}\n",
+		},
+		{
+			name:           "ok, serve file with '%20' in filename on disk",
+			whenURL:        "/special/" + url.PathEscape("file%20with%20percent.txt"), // file%2520with%2520percent.txt
+			expectCode:     http.StatusOK,
+			expectContains: "file with percents in filename",
+		},
+		{
+			name:           "nok, when filename with '%20' on disk is decoded twice",
+			whenURL:        "/special/file%20with%20percent.txt",
+			expectCode:     http.StatusNotFound,
+			expectContains: "{\"message\":\"Not Found\"}\n",
 		},
 	}
 

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -170,10 +169,6 @@ func StaticWithConfig(config StaticConfig) echo.MiddlewareFunc {
 			p := c.Request().URL.Path
 			if strings.HasSuffix(c.Path(), "*") { // When serving from a group, e.g. `/static*`.
 				p = c.Param("*")
-			}
-			p, err = url.PathUnescape(p)
-			if err != nil {
-				return
 			}
 			name := path.Join(config.Root, path.Clean("/"+p)) // "/"+ for security
 
